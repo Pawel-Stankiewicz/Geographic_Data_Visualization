@@ -2,20 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-        <title>Geographic Data Visualization</title>
-        <link rel="stylesheet" href="style.css">
-    </head>
+    <title>Geographic Data Visualization</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
+<!--        Do not work with map only -->
+    <style>
+            html, body, #map { width: 100%; height: 100%; }
+    </style>
+
+</head>
 <body>
-<h1>Geographic Data Visualization</h1>
+<div id="map" ></div>
 
-<div id="map"></div>
 
-<form action="/upload_csv" method="post" enctype="multipart/form-data">
-    <input type="file" name="csv_file" accept=".csv">
-    <input type="submit" value="Upload CSV">
-</form>
 
-<script src="leaflet.js"></script>
-<script src="script.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+<script src="{{ url_for('static', filename='layers.js') }}"></script>
 </body>
 </html>
