@@ -1,3 +1,49 @@
+// Save the current map settings to local storage
+function saveMapSettings() {
+    // Get the current map center and zoom level
+    var center = map.getCenter();
+    var zoom = map.getZoom();
+
+    // Get the current active layer
+    var activeLayer = null;
+    for (var key in map._layers) {
+        //._map is a property of the layer object that indicates whether the layer is currently being displayed on the map or not.
+        // undocumented
+        if (map._layers[key]._map) {
+            activeLayer = map._layers[key]._url;
+            break;
+        }
+    }
+
+    // Save the map center, zoom level, and active layer to local storage
+    localStorage.setItem('mapCenter', JSON.stringify(center));
+    localStorage.setItem('mapZoom', zoom);
+    localStorage.setItem('activeLayer', activeLayer);
+}
+
+// Load the map settings from local storage
+function loadMapSettings() {
+    // Retrieve the map center, zoom level, and active layer from local storage
+    var center = JSON.parse(localStorage.getItem('mapCenter'));
+    var zoom = localStorage.getItem('mapZoom');
+    var activeLayer = localStorage.getItem('activeLayer');
+
+    // If the map center and zoom level are available, set the map view
+    if (center && zoom) {
+        map.setView(center, zoom);
+    }
+
+    // If the active layer is available, set the active layer
+    if (activeLayer) {
+        for (var key in layerControl._layers) {
+            if (layerControl._layers[key].layer._url === activeLayer) {
+                layerControl._layers[key].layer.addTo(map);
+                break;
+            }
+        }
+    }
+}
+
 // Create the map and set the view to a specific geographical location
 var map = L.map('map').setView([51.505, -0.09], 13);
 
@@ -36,3 +82,9 @@ var layerControl = L.control.layers({
     "Esri Satellite": esriSatelliteLayer,
     "MtbMap": mtbMapLayer
 }).addTo(map);
+
+// Load the map settings from local storage
+loadMapSettings();
+
+// Save the map settings to local storage when the map is moved or zoomed
+map.on('moveend', saveMapSettings);
