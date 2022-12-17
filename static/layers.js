@@ -1,14 +1,13 @@
 // Save the current map settings to local storage
 function saveMapSettings() {
     // Get the current map center and zoom level
-    var center = map.getCenter();
-    var zoom = map.getZoom();
+    const center = map.getCenter();
+    const zoom = map.getZoom();
 
     // Get the current active layer
-    var activeLayer = null;
-    for (var key in map._layers) {
+    let activeLayer = null;
+    for (let key in map._layers) {
         //._map is a property of the layer object that indicates whether the layer is currently being displayed on the map or not.
-        // undocumented
         if (map._layers[key]._map) {
             activeLayer = map._layers[key]._url;
             break;
@@ -24,9 +23,9 @@ function saveMapSettings() {
 // Load the map settings from local storage
 function loadMapSettings() {
     // Retrieve the map center, zoom level, and active layer from local storage
-    var center = JSON.parse(localStorage.getItem('mapCenter'));
-    var zoom = localStorage.getItem('mapZoom');
-    var activeLayer = localStorage.getItem('activeLayer');
+    let center = JSON.parse(localStorage.getItem('mapCenter'));
+    let zoom = localStorage.getItem('mapZoom');
+    let activeLayer = localStorage.getItem('activeLayer');
 
     // If the map center and zoom level are available, set the map view
     if (center && zoom) {
@@ -35,7 +34,7 @@ function loadMapSettings() {
 
     // If the active layer is available, set the active layer
     if (activeLayer) {
-        for (var key in layerControl._layers) {
+        for (let key in layerControl._layers) {
             if (layerControl._layers[key].layer._url === activeLayer) {
                 layerControl._layers[key].layer.addTo(map);
                 break;
@@ -45,7 +44,7 @@ function loadMapSettings() {
 }
 
 // Create the map and set the view to a specific geographical location
-var map = L.map('map').setView([51.505, -0.09], 13);
+var map = L.map('map').setView([55.9, -3.2], 8);
 
 // Add the OSM layer to the map
 var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -74,17 +73,42 @@ var mtbMapLayer = L.tileLayer('https://tile.mtbmap.cz/mtbmap_tiles/{z}/{x}/{y}.p
     attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Map style: &copy; <a href="https://mtbmap.cz">MtbMap</a>'
 });
 
-// Create a layer control and add it to the map
-var layerControl = L.control.layers({
+// add the Hiking Waymarked Trails overlay
+var wayMarkedTrails = L.tileLayer.wms('https://tile.waymarkedtrails.org/hiking/{z}/{x}/{y}.png', {
+    layers: 'hiking',
+    format: 'image/png',
+    transparent: true,
+    attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="https://hiking.waymarkedtrails.org/">Waymarked Trails</a>'
+});
+
+// Add the Cycling Waymarked Trails overlay
+var wayMarkedTrailsCycling = L.tileLayer.wms('https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png', {
+    layers: 'cycling',
+    format: 'image/png',
+    transparent: true,
+    attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="https://cycling.waymarkedtrails.org/">Waymarked Trails</a>'
+});
+
+var baseMaps = {
     "OSM": osmLayer,
     "OSM.de": osmdeLayer,
     "OpenTopo": opentopoLayer,
     "Esri Satellite": esriSatelliteLayer,
     "MtbMap": mtbMapLayer
-}).addTo(map);
+};
+
+var overlays = {
+    "Hiking Trails": wayMarkedTrails,
+    "Cycling Trails": wayMarkedTrailsCycling
+};
+
+// Create a layer control and add it to the map
+var layerControl = L.control.layers(baseMaps, overlays).addTo(map);
+
+L.control.scale().addTo(map);
 
 // Load the map settings from local storage
 loadMapSettings();
 
-// Save the map settings to local storage when the map is moved or zoomed
+// Save the map settings to local storage when the map is moved or zoomed. on ads an event listner
 map.on('moveend', saveMapSettings);

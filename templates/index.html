@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <title>Geographic Data Visualization</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
-<!--        Do not work with map only -->
+<!--        <html> and <body> have default margins and paddings -->
     <style>
-            html, body, #map { width: 100%; height: 100%; }
+            html, body, #map { margin:0; padding:0; width: 100%; height: 100%; }
+            body { overflow: hidden; }  /* Hide scrollbars */
     </style>
 
 </head>
@@ -17,5 +18,6 @@
 
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
 <script src="{{ url_for('static', filename='layers.js') }}"></script>
+<!--<script src="{{ url_for('static', filename='leaflet-src.js') }}"></script>-->
 </body>
 </html>
