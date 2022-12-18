@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <title>Geographic Data Visualization</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
-<!--        <html> and <body> have default margins and paddings -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='map.css') }}">
+    <!--        <html> and <body> have default margins and paddings -->
     <style>
             html, body, #map { margin:0; padding:0; width: 100%; height: 100%; }
             body { overflow: hidden; }  /* Hide scrollbars */
@@ -16,8 +17,24 @@
 
 
 
+
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
-<script src="{{ url_for('static', filename='layers.js') }}"></script>
 <!--<script src="{{ url_for('static', filename='leaflet-src.js') }}"></script>-->
+<script src="{{ url_for('static', filename='layers.js') }}"></script>
+
+<script>
+// Add markers to the map for each latitude and longitude pair
+{% for lat, lng in locations %}
+        var marker = L.marker([{{ lat }}, {{ lng }}], {
+        icon: L.divIcon({
+            className: 'custom-marker'
+        })
+
+        }).addTo(map);
+
+    {% endfor %}
+</script>
+{# redundent #}
+<script src="{{ url_for('static', filename='markers.js') }}"></script>
 </body>
 </html>

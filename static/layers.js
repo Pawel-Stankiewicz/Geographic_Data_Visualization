@@ -49,13 +49,13 @@ var map = L.map('map').setView([55.9, -3.2], 8);
 // Add the OSM layer to the map
 var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
-maxZoom: 18
+maxZoom: 19
 }).addTo(map);
 
 // Add the OSM.de layer to the map
 var osmdeLayer = L.tileLayer('https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png', {
 attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
-maxZoom: 18
+maxZoom: 19
 });
 
 // Add the OpenTopo layer to the map
@@ -112,3 +112,4 @@ loadMapSettings();
 
 // Save the map settings to local storage when the map is moved or zoomed. on ads an event listner
 map.on('moveend', saveMapSettings);
+
