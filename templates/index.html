@@ -23,16 +23,23 @@
 <script src="{{ url_for('static', filename='layers.js') }}"></script>
 
 <script>
-// Add markers to the map for each latitude and longitude pair
-{% for lat, lng in locations %}
-        var marker = L.marker([{{ lat }}, {{ lng }}], {
-        icon: L.divIcon({
-            className: 'custom-marker'
-        })
-
-        }).addTo(map);
-
+// Create content for tooltips and popups and add markers to the map
+{% for record in data_dict %}
+    var popupContent = '<table>';
+    {% for key, value in record.items() %}
+        popupContent += '<tr><td>{{ key }}</td><td>{{ value }}</td></tr>';
     {% endfor %}
+    popupContent += '</table>';
+
+    L.marker([{{ record.LATITUDE }}, {{ record.LONGITUDE }}], {
+    icon: L.divIcon({
+        className: 'custom-marker'
+    })
+
+}).addTo(map)
+        .bindPopup(popupContent)
+        .bindTooltip(popupContent);
+{% endfor %}
 </script>
 {# redundent #}
 <script src="{{ url_for('static', filename='markers.js') }}"></script>
