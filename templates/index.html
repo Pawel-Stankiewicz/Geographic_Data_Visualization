@@ -14,7 +14,14 @@
 </head>
 <body>
 <div id="map" ></div>
-
+<!-- Dropdown menu -->
+<form>
+    <select id="attribute-select" onchange="updateMap()">
+        {% for attribute in numerical_attributes %}
+            <option value="{{ attribute }}">{{ attribute }}</option>
+        {% endfor %}
+    </select>
+</form>
 
 
 
@@ -24,7 +31,7 @@
 
 <script>
 // Create content for tooltips and popups and add markers to the map
-{% for record in data_dict %}
+{% for record in data %}
     var popupContent = '<table>';
     {% for key, value in record.items() %}
         popupContent += '<tr><td>{{ key }}</td><td>{{ value }}</td></tr>';
@@ -32,14 +39,44 @@
     popupContent += '</table>';
 
     L.marker([{{ record.LATITUDE }}, {{ record.LONGITUDE }}], {
-    icon: L.divIcon({
-        className: 'custom-marker'
-    })
-
-}).addTo(map)
-        .bindPopup(popupContent)
-        .bindTooltip(popupContent);
+        icon: L.divIcon({
+            className: 'custom-marker'
+            })
+        }).addTo(map)
+            .bindPopup(popupContent)
+            .bindTooltip(popupContent);
 {% endfor %}
+
+// Update the map based on the selected attribute
+function updateMap() {
+    // Get the selected attribute
+    var attribute = document.getElementById('attribute-select').value;
+
+    // Loop through the markers and update their colors based on the attribute value
+    for (var i = 0; i < map._layers.length; i++) {  // _layers.length is the number of markers
+        if (map._layers[i].feature) {         // _layers[i].feature is the marker object
+            // Get the attribute value for the marker
+            var value = map._layers[i].feature.properties[attribute];
+
+            // Set the marker color based on the value
+            map._layers[i].setStyle({
+                fillColor: getColor(value)
+            });
+        }
+    }
+}
+
+// Get a color for a given attribute value
+function getColor(value) {
+    // You can define your own color scale or use a library like chroma.js
+    // Here is a simple example using the hsv color space:
+    return chroma.hsv(value / 100, 1, 1);
+}
+
+
+</script>
+
+
 </script>
 {# redundent #}
 <script src="{{ url_for('static', filename='markers.js') }}"></script>

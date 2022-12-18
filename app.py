@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 from csv_handler import process_csv
+import csv
 import pandas as pd
 
 app = Flask(__name__)
@@ -7,20 +8,25 @@ app = Flask(__name__)
 @app.route('/')
 def index_map():
     # Read the CSV file
-    df = pd.read_csv('data/12.csv')
+    with open('data/12.csv') as f:  # f is a file object
+        reader = csv.DictReader(f)
 
-    # Get the latitude and longitude values from the CSV
-    latitudes = df['LATITUDE'].tolist()
-    longitudes = df['LONGITUDE'].tolist()
+        # Store the data in a list
+        data = []
+        for row in reader:
+            data.append(row)
 
-    # Create a list of marker locations
-    locations = []
-    for lat, lng in zip(latitudes, longitudes):
-        locations.append((lat, lng))
+        # Get the numerical attributes from the CSV
+        numerical_attributes = []
+        for key in data[0].keys():
+            try:
+                float(data[0][key]) # Try to convert the value to a float
+                numerical_attributes.append(key)
+            except ValueError:
+                pass
 
-    # Render the map template, passing in the locations and marker color
-    return render_template('index.html', locations=locations, marker_color='crimson')
-
+        # Render the template, passing in the data and numerical attributes
+        return render_template('index.html', data=data, numerical_attributes=numerical_attributes)
 @app.route('/upload_csv', methods=['POST'])
 def upload_csv():
     if 'csv_file' not in request.files:
@@ -41,7 +47,7 @@ def upload_csv():
 
     data = process_csv(csv_file)
 
-    return render_template('index.html', data=data)
+    return render_template('index.html', data_dict=data)
 
 if __name__ == '__main__':
     app.run()
