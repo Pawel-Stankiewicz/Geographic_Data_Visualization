@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Geographic Data Visualization</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
+    <link href="https://cdn.jsdelivr.net/npm/nouislider@14.6.2/distribute/nouislider.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='map.css') }}">
+    <!--        <html> and <body> have default margins and paddings -->
+    <style>
+
+
+    </style>
+
+</head>
+<body>
+<div id="map" >
+    <div class="flex-column">
+        <!-- Dropdown menu -->
+        <div id="form">
+            <form>
+                <select id="attribute-select" class="form-item" onchange="updateMap()">
+                    {% for attribute in numerical_attributes %}
+                        <option value="{{ attribute }}">{{ attribute }}</option>
+                    {% endfor %}
+                </select>
+                <input type="range" id="range-slider" min="0" max="100" step="1" oninput="updateRangeInputs()">
+                <input type="number" id="min-input" class="form-item" min="0" max="100" step="1" onchange="updateRangeSlider()">
+                <input type="number" id="max-input" class="form-item" min="0" max="100" step="1" onchange="updateRangeSlider()">
+            </form>
+        </div>
+    </div>
+
+</div>
+
+
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+<!--<script src="{{ url_for('static', filename='leaflet-src.js') }}"></script>-->
+<script src="{{ url_for('static', filename='layers.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/nouislider@14.6.2/distribute/nouislider.min.js"></script>
+
+<script>
+    // Initialize the map and the control variables
+    var attribute = document.getElementById('attribute-select').value;
+    var minValue = Number.MAX_VALUE;
+    var maxValue = Number.MIN_VALUE;
+
+    // Find the minimum and maximum values for the selected attribute
+    {% for point in data %}
+        minValue = Math.min(minValue, {{ point[attribute] }});
+        maxValue = Math.max(maxValue, {{ point[attribute] }});
+    {% endfor %}
+
+    // Set the range slider and input values
+    document.getElementById('range-slider').min = minValue;
+    document.getElementById('range-slider').max = maxValue;
+    document.getElementById('min-input').min = minValue;
+    document.getElementById('min-input').max = maxValue;
+    document.getElementById('max-input').min = minValue;
+    document.getElementById('max-input').max = maxValue;
+    document.getElementById('min-input').value = minValue;
+    document.getElementById('max-input').value = maxValue;
+
+// Create content for tooltips and popups and add markers to the map
+{% for record in data %}
+    var popupContent = '<table>';
+    {% for key, value in record.items() %}
+        popupContent += '<tr><td>{{ key }}</td><td>{{ value }}</td></tr>';
+    {% endfor %}
+    popupContent += '</table>';
+
+    L.marker([{{ record.LATITUDE }}, {{ record.LONGITUDE }}], {
+        icon: L.divIcon({
+            className: 'custom-marker'
+            })
+        }).addTo(map)
+            .bindPopup(popupContent)
+            .bindTooltip(popupContent);
+{% endfor %}
+
+    // Update the map based on the selected attribute and range values
+    function updateMap() {
+        // Get the selected attribute and range values
+        attribute = document.getElementById('attribute-select').value;
+        minValue = document.getElementById('min-input').value;
+        maxValue = document.getElementById('max-input').value;
+
+        // Loop through the markers and update their visibility based on the attribute value
+        for (var i = 0; i < map._layers.length; i++) {
+            if (map._layers[i].feature) {
+                // Get the attribute value for the marker
+                var value = map._layers[i].feature.properties[attribute];
+
+                // Show or hide the marker based on the value
+                if (value >= minValue && value <= maxValue) {
+                    map._layers[i].setOpacity(1);
+                } else {
+                    map._layers[i].setOpacity(0);
+                }
+            }
+        }
+    }
+
+    // Update the range inputs when the slider value changes
+    function updateRangeInputs() {
+        document.getElementById('min-input').value = document.getElementById('range-slider').value;
+        document.getElementById('max-input').value = document.getElementById('range-slider').value;
+    }
+
+    // Update the range slider when the input values change
+    function updateRangeSlider() {
+        document.getElementById('range-slider').value = document.getElementById('min-input').value;
+    }
+</script>
+
+{# redundent #}
+<script src="{{ url_for('static', filename='markers.js') }}"></script>
+</body>
+</html>
