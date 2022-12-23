@@ -56,36 +56,61 @@
         };
     });
 
-    // Set range for noUiSlider
+    // Initialize range slider
+    var slider = document.getElementById('slider');
     var attribute = document.getElementById('attribute').value;
     var values = data.map(function (point) {
         return point[attribute];
     });
     var min = Math.min.apply(Math, values);
     var max = Math.max.apply(Math, values);
-    noUiSlider.create(document.getElementById('slider'), {
+    noUiSlider.create(slider, {
         start: [min, max],
         range: {
             'min': min,
             'max': max
         },
         connect: true,
-        behaviour: 'drag',
-        step: 1
+        //step: 1,
+        tooltips: true
     });
 
     // Update marker visibility based on attribute values
-    function updateAttribute() {
-        // Get selected attribute and range values
-        var attribute = document.getElementById('attribute').value;
-        var range = document.getElementById('slider').noUiSlider.get();
-
-        // Update marker visibility
+    function updateMarkers() {
+        var range = slider.noUiSlider.get();
+        min = range[0];
+        max = range[1];
         markers.forEach(function (marker) {
             var value = marker.feature.properties[attribute];
-            marker.setOpacity((value >= range[0] && value <= range[1]) ? 1 : 0.2);
+            marker.setOpacity((value >= min && value <= max) ? 1 : 0.1);
         });
     }
+
+    // Update map with attribute values
+    function updateAttribute() {
+        // Get selected attribute and values
+        attribute = document.getElementById('attribute').value;
+        values = data.map(function (point) {
+            return point[attribute];
+        });
+
+        // Update range for noUiSlider
+        min = Math.min.apply(Math, values);
+        max = Math.max.apply(Math, values);
+        slider.noUiSlider.updateOptions({
+            start: [min, max],
+            range: {
+                'min': min,
+                'max': max
+            }
+        });
+        // Update marker visibility
+        updateMarkers();
+    }
+    // Set up event listener for range slider
+    slider.noUiSlider.on('change', updateMarkers);
+
+
 </script>
 
 {# redundent #}
