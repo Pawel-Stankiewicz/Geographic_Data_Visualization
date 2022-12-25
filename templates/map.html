@@ -26,6 +26,8 @@
                 </select>
                 <!-- Range slider for attribute values -->
                 <div id="slider"></div>
+                <input id="min-range" type="number" oninput="updateRange()">
+                <input id="max-range" type="number" oninput="updateRange()">
             </form>
         </div>
     </div>
@@ -37,6 +39,7 @@
 <!--<script src="{{ url_for('static', filename='leaflet-src.js') }}"></script>-->
 <script src="{{ url_for('static', filename='layers.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/nouislider@15.6.1/dist/nouislider.js"></script>
+<script src="{{ url_for('static', filename='nouislider.js') }}"></script>
 
 <script>
     // parse jinja variable data into a JSON object and store it in a variable called data (global variable)
@@ -71,9 +74,23 @@
             'max': max
         },
         connect: true,
-        //step: 1,
+       // step: 1,
         tooltips: true
     });
+
+    // Update input numbers with range values
+    var minRangeInput = document.getElementById('min-range');
+    var maxRangeInput = document.getElementById('max-range');
+    minRangeInput.value = min;
+    maxRangeInput.value = max;
+
+    // Update range values with input numbers
+    function updateRange() {
+        var min = parseInt(minRangeInput.value);
+        var max = parseInt(maxRangeInput.value);
+        slider.noUiSlider.set([min, max]);
+        updateMarkers();
+    }
 
     // Update marker visibility based on attribute values
     function updateMarkers() {
@@ -104,12 +121,17 @@
                 'max': max
             }
         });
+        // Update input numbers with range values
+        minRangeInput.value = min;
+        maxRangeInput.value = max;
+
         // Update marker visibility
         updateMarkers();
     }
-    // Set up event listener for range slider
-    slider.noUiSlider.on('change', updateMarkers);
-
+    // Set up event listeners for range slider and input fields
+    slider.noUiSlider.on('slide', updateMarkers);
+    minRangeInput.addEventListener('input', updateRange);
+    maxRangeInput.addEventListener('input', updateRange);
 
 </script>
 
