@@ -24,10 +24,11 @@
                         <option value="{{ attribute }}">{{ attribute }}</option>
                     {% endfor %}
                 </select>
+
                 <!-- Range slider for attribute values -->
                 <div id="slider"></div>
-                <input id="min-range" type="number" oninput="updateRange()">
-                <input id="max-range" type="number" oninput="updateRange()">
+                <input id="min-range" type="number" oninput="updateRange()">    <!-- oninput is triggered when the value changes -->
+                <input id="max-range" type="number" oninput="updateRange()">    <!-- oninput is triggered when the value changes -->
             </form>
         </div>
     </div>
@@ -44,7 +45,7 @@
 <script>
     // parse jinja variable data into a JSON object and store it in a variable called data (global variable)
 
-    const data = JSON.parse({{ data|tojson }});
+    const data = JSON.parse({{ data|tojson }});     // data is a jinja variable
 
     // Add markers to map
     var markers = [];
@@ -74,23 +75,15 @@
             'max': max
         },
         connect: true,
-       // step: 1,
-        tooltips: true
     });
 
     // Update input numbers with range values
-    var minRangeInput = document.getElementById('min-range');
-    var maxRangeInput = document.getElementById('max-range');
-    minRangeInput.value = min;
-    maxRangeInput.value = max;
-
-    // Update range values with input numbers
-    function updateRange() {
-        var min = parseInt(minRangeInput.value);
-        var max = parseInt(maxRangeInput.value);
-        slider.noUiSlider.set([min, max]);
-        updateMarkers();
-    }
+    // var minRangeInput = document.getElementById('min-range');
+    // var maxRangeInput = document.getElementById('max-range');
+    // minRangeInput.value = min;
+    // maxRangeInput.value = max;
+    document.getElementById('min-range').value = min;
+    document.getElementById('max-range').value = max;
 
     // Update marker visibility based on attribute values
     function updateMarkers() {
@@ -122,16 +115,30 @@
             }
         });
         // Update input numbers with range values
-        minRangeInput.value = min;
-        maxRangeInput.value = max;
+        // minRangeInput.value = min;
+        // maxRangeInput.value = max;
+        document.getElementById('min-range').value = min;
+        document.getElementById('max-range').value = max;
 
         // Update marker visibility
         updateMarkers();
     }
+
+    // Update range slider with input field values
+    function updateRange() {
+        min = document.getElementById('min-range').value;
+        max = document.getElementById('max-range').value;
+        slider.noUiSlider.set([min, max]);
+        updateMarkers()             // Update marker visibility
+    }
     // Set up event listeners for range slider and input fields
-    slider.noUiSlider.on('slide', updateMarkers);
-    minRangeInput.addEventListener('input', updateRange);
-    maxRangeInput.addEventListener('input', updateRange);
+    slider.noUiSlider.on('slide', function(values) {
+        updateMarkers();        // Update marker visibility
+        document.getElementById('min-range').value = values[0];
+        document.getElementById('max-range').value = values[1];
+    });
+    document.getElementById('min-range').addEventListener('change', updateRange);   // Update range slider with input field values
+    document.getElementById('max-range').addEventListener('change', updateRange);   // Update range slider with input field values
 
 </script>
 
