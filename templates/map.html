@@ -6,12 +6,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
     <link href="https://cdn.jsdelivr.net/npm/nouislider@15.6.1/dist/nouislider.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='map.css') }}">
-    <!--        <html> and <body> have default margins and paddings -->
-    <style>
-
-
-    </style>
-
 </head>
 <body>
 <div id="map" >
@@ -19,13 +13,13 @@
         <!-- Dropdown menu -->
         <div id="form">
             <form>
-                <select id="attribute" class="form-item" onchange="updateAttribute()">
-                    {% for attribute in numerical_attributes %}
-                        <option value="{{ attribute }}">{{ attribute }}</option>
+                <select id="dataColumn" class="form-item" onchange="displaySelectedDataColumn()">
+                    {% for column in numerical_attributes %}
+                        <option value="{{ column }}">{{ column }}</option>
                     {% endfor %}
                 </select>
 
-                <!-- Range slider for attribute values -->
+                <!-- Range slider for dataColumn values -->
                 <div id="slider"></div>
                 <input id="min-range" type="number" oninput="updateRange()">    <!-- oninput is triggered when the value changes -->
                 <input id="max-range" type="number" oninput="updateRange()">    <!-- oninput is triggered when the value changes -->
@@ -43,8 +37,6 @@
 <script src="{{ url_for('static', filename='nouislider.js') }}"></script>
 
 <script>
-    // parse jinja variable data into a JSON object and store it in a variable called data (global variable)
-
     const data = JSON.parse({{ data|tojson }});     // data is a jinja variable
 
     // Add markers to map
@@ -62,9 +54,9 @@
 
     // Initialize range slider
     var slider = document.getElementById('slider');
-    var attribute = document.getElementById('attribute').value;
+    var dataColumn = document.getElementById('dataColumn').value;
     var values = data.map(function (point) {
-        return point[attribute];
+        return point[dataColumn];
     });
     var min = Math.min.apply(Math, values);
     var max = Math.max.apply(Math, values);
@@ -85,23 +77,23 @@
     document.getElementById('min-range').value = min;
     document.getElementById('max-range').value = max;
 
-    // Update marker visibility based on attribute values
+    // Update marker visibility based on dataColumn values
     function updateMarkers() {
         var range = slider.noUiSlider.get();
         min = range[0];
         max = range[1];
         markers.forEach(function (marker) {
-            var value = marker.feature.properties[attribute];
+            var value = marker.feature.properties[dataColumn];
             marker.setOpacity((value >= min && value <= max) ? 1 : 0.1);
         });
     }
 
-    // Update map with attribute values
-    function updateAttribute() {
-        // Get selected attribute and values
-        attribute = document.getElementById('attribute').value;
+    // Update map with dataColumn values
+    function displaySelectedDataColumn() {
+        // Get selected dataColumn and values
+        dataColumn = document.getElementById('dataColumn').value;
         values = data.map(function (point) {
-            return point[attribute];
+            return point[dataColumn];
         });
 
         // Update range for noUiSlider

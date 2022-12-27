@@ -30,14 +30,22 @@ body, html { height: 100%; margin: 0;}
 .noUi-connect {
     background: crimson;
 }
-#range-slider {
+#slider {
     width: 160px;
-
+    margin: 10px;
 }
-
 input[type="number"] {
-    max-width: 100px;
+    max-width: 50px;
 }
+#max-range {
+    position: absolute;
+    right: -5%;
+}
+#min-range {
+    position: absolute;
+    left: -5%;
+}
+
 .custom-marker {
     background-color: crimson;
     /*border-radius: 50%;*/
