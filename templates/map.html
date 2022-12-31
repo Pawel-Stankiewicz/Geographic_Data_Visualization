@@ -23,6 +23,27 @@
                 <div id="slider"></div>
                 <input id="min-range" type="number" oninput="updateRange()">    <!-- oninput is triggered when the value changes -->
                 <input id="max-range" type="number" oninput="updateRange()">    <!-- oninput is triggered when the value changes -->
+
+                <!-- Dropdown menu for selecting number of quantiles -->
+                <label for="numQuantiles">Number of classes (quantiles):</label>
+                <select id="numQuantiles">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+
+                <!-- Form for setting quantile ranges and colors -->
+                <div id="quantileForm">
+                    <div id="quantileInputs"></div>
+                </div>
+
+
             </form>
         </div>
     </div>
@@ -38,6 +59,7 @@
 
 <script>
     const data = JSON.parse({{ data|tojson }});     // data is a jinja variable
+    const quantileRanges = JSON.parse({{ quantile_ranges|tojson }});
 
     // Add markers to map
     var markers = [];
@@ -78,7 +100,7 @@
     document.getElementById('max-range').value = max;
 
     // Update marker visibility based on dataColumn values
-    function updateMarkers() {
+    function updateMarkersVisibility() {
         var range = slider.noUiSlider.get();
         min = range[0];
         max = range[1];
@@ -113,7 +135,7 @@
         document.getElementById('max-range').value = max;
 
         // Update marker visibility
-        updateMarkers();
+        updateMarkersVisibility();
     }
 
     // Update range slider with input field values
@@ -121,16 +143,96 @@
         min = document.getElementById('min-range').value;
         max = document.getElementById('max-range').value;
         slider.noUiSlider.set([min, max]);
-        updateMarkers()             // Update marker visibility
+        updateMarkersVisibility()             // Update marker visibility
     }
     // Set up event listeners for range slider and input fields
     slider.noUiSlider.on('slide', function(values) {
-        updateMarkers();        // Update marker visibility
+        updateMarkersVisibility();        // Update marker visibility
         document.getElementById('min-range').value = values[0];
         document.getElementById('max-range').value = values[1];
     });
     document.getElementById('min-range').addEventListener('change', updateRange);   // Update range slider with input field values
     document.getElementById('max-range').addEventListener('change', updateRange);   // Update range slider with input field values
+
+
+
+
+
+
+    function numQuantilesChanged() {
+        console.log('numQuantilesChanged called');
+        // Get the selected number of quantiles
+        const numQuantiles = this.value;
+
+        // Clear the current quantile inputs
+        document.getElementById('quantileInputs').innerHTML = '';
+
+            // Add inputs for each quantile range
+            for (let i = 0; i < numQuantiles - 1; i++) {
+                // Create a div for the quantile input
+                const quantileDiv = document.createElement('div');
+
+                // Create a label for the quantile input
+                const quantileLabel = document.createElement('label');
+                quantileLabel.innerHTML = 'Quantile ' + (i + 1);
+                quantileDiv.appendChild(quantileLabel);
+
+                // Create a number input for the quantile range
+                const quantileInput = document.createElement('input');
+                quantileInput.type = 'number';
+                quantileInput.name = 'quantile' + (i + 1);
+                quantileInput.value = quantileRanges[dataColumn][numQuantiles][i];
+                quantileDiv.appendChild(quantileInput);
+
+                // Create a color input for the quantile range
+                const colorInput = document.createElement('input');
+                colorInput.type = 'color';
+                colorInput.name = 'color' + (i + 1);
+                colorInput.value = '#000000';  // default to black
+                quantileDiv.appendChild(colorInput);
+
+                // Add the quantile input div to the page
+                document.getElementById('quantileInputs').appendChild(quantileDiv);
+            }
+        }
+
+    function quantileInputChanged(event) {
+        // Check if the event target is within the quantile form
+        if (!event.target.closest('#quantileForm')) return;
+
+        // Get the selected number of quantiles
+        const numQuantiles = document.getElementById('numQuantiles').value;
+
+        // Get the colors for each quantile range
+        const colors = {};
+        for (let i = 0; i < numQuantiles - 1; i++) {
+            const colorInput = document.querySelector('input[name="color' + (i + 1) + '"]');
+            colors[i] = colorInput.value;
+        }
+
+        // Update the marker colors based on the data value and quantile ranges
+        markers.forEach(function (marker) {
+            const value = marker.feature.properties[dataColumn];
+            for (let i = 0; i < numQuantiles - 1; i++) {
+                if (value >= quantileRanges[dataColumn][numQuantiles][i] && value < quantileRanges[dataColumn][numQuantiles][i + 1]) {
+                    marker.setIcon(L.divIcon({
+                        className: 'marker-icon',
+                        html: '<div style="background-color: ' + colors[i] + ';"></div>'
+                    }));
+                }
+            }
+        });
+    }
+
+
+    // Wait for the document to be fully loaded before setting up the event listeners
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handle changes to the number of quantiles dropdown
+        document.getElementById('numQuantiles').addEventListener('change', numQuantilesChanged);
+
+        // Handle changes to the quantile inputs using event delegation
+        document.addEventListener('change', quantileInputChanged);
+    });
 
 </script>
 

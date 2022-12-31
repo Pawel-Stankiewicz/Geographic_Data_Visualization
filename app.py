@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 from csv_handler import process_csv
 import csv
 import json
+import numpy as np
 import pandas as pd
 
 app = Flask(__name__)
@@ -15,9 +16,22 @@ def index_map():
     # Get list of numerical attributes. _get_num... returns new DF containing only the numerical columns
     numerical_attributes = [col for col in df._get_numeric_data().columns]
 
-# Pass data to Jinja2 template
-    return render_template('map.html', data=data, numerical_attributes=numerical_attributes)
+    # Calculate quantile ranges for 2-10 quantiles for each attribute
+    all_quantile_ranges = {}
+    for attribute in numerical_attributes:
+        quantile_ranges = {}
+        for i in range(2, 11):
+            # tolist() because quantile returns series - not JSON serializable
+            quantile_ranges[i] = df[attribute].quantile(np.linspace(0, 1, i+1)).tolist()
+        # Add the quantile ranges for the attribute to the dictionary
+        all_quantile_ranges[attribute] = quantile_ranges
 
+    # Convert the quantile ranges to a JSON object for use in the template
+    quantile_ranges_json = json.dumps(all_quantile_ranges)
+
+
+# Pass data to Jinja2 template
+    return render_template('map.html', data=data, numerical_attributes=numerical_attributes, quantile_ranges=quantile_ranges_json)
 
 @app.route('/upload_csv', methods=['POST'])
 def upload_csv():
