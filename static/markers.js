@@ -1,4 +1,4 @@
-// Set the marker class name based on the data-marker-color attribute
+// Set the marker class name based on the data-marker-color dataColumn
 function addToMarkersCustomMarkerClass() {
     var markers = document.querySelectorAll('.leaflet-marker-icon');
     markers.forEach(function(marker) {

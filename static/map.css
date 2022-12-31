@@ -5,13 +5,21 @@ body, html { height: 100%; margin: 0;}
     height: 100%;
     position: relative
 }
+.custom-marker {
+    background-color: crimson;
+    width: 20px;
+    height: 20px;
+}
 
+
+#data-controls {
+    position: absolute;
+    top: 100px;
+    left: 5px;
+}
 .flex-column {
     display: flex;
     flex-direction: column;
-    position: absolute;
-    top: 100px;
-    left: 15px;
 }
 #form {
     position: absolute;     /* otherwise flex doesn't work */
@@ -34,21 +42,27 @@ body, html { height: 100%; margin: 0;}
     width: 160px;
     margin: 10px;
 }
+#slider-inputs {
+    display: flex;
+    justify-content: space-between;
+}
 input[type="number"] {
     max-width: 50px;
 }
-#max-range {
-    position: absolute;
-    right: -5%;
-}
-#min-range {
-    position: absolute;
-    left: -5%;
-}
 
-.custom-marker {
-    background-color: crimson;
-    /*border-radius: 50%;*/
-    width: 20px;
-    height: 20px;
+#quantiles-label {
+    font-size: 1.2em;
+    text-align: center;
+    margin-top: 20px;
+    background-color: white;
+    flex: 0 0 auto;
+    width: auto;
+    border-radius: 5px;
+    padding: 3px;
+    align-self: center;
+}
+#numQuantiles {
+    width: 3em;
+    flex: 0 0 auto;
+    align-self: center;
 }

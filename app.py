@@ -16,11 +16,11 @@ def index_map():
     # Get list of numerical attributes. _get_num... returns new DF containing only the numerical columns
     numerical_attributes = [col for col in df._get_numeric_data().columns]
 
-    # Calculate quantile ranges for 2-10 quantiles for each attribute
+    # Calculate quantile ranges for 1-10 quantiles for each attribute
     all_quantile_ranges = {}
     for attribute in numerical_attributes:
         quantile_ranges = {}
-        for i in range(2, 11):
+        for i in range(1, 11):  # 1 is the whole range
             # tolist() because quantile returns series - not JSON serializable
             quantile_ranges[i] = df[attribute].quantile(np.linspace(0, 1, i+1)).tolist()
         # Add the quantile ranges for the attribute to the dictionary

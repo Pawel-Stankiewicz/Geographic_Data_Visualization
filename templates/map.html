@@ -9,43 +9,43 @@
 </head>
 <body>
 <div id="map" >
-    <div class="flex-column">
+    <div id = "data-controls">
         <!-- Dropdown menu -->
-        <div id="form">
-            <form>
-                <select id="dataColumn" class="form-item" onchange="displaySelectedDataColumn()">
-                    {% for column in numerical_attributes %}
-                        <option value="{{ column }}">{{ column }}</option>
-                    {% endfor %}
-                </select>
+        <form id="form" class="flex-column">
+            <select id="dataColumn" class="form-item" onchange="displaySelectedDataColumn()">
+                {% for column in numerical_attributes %}
+                <option value="{{ column }}">{{ column }}</option>
+                {% endfor %}
+            </select>
 
-                <!-- Range slider for dataColumn values -->
-                <div id="slider"></div>
+            <!-- Range slider for dataColumn values -->
+            <div id="slider"></div>
+            <div id="slider-inputs">
                 <input id="min-range" type="number" oninput="updateRange()">    <!-- oninput is triggered when the value changes -->
                 <input id="max-range" type="number" oninput="updateRange()">    <!-- oninput is triggered when the value changes -->
+            </div>
+            <!-- Dropdown menu for selecting number of quantiles -->
+            <label for="numQuantiles" id="quantiles-label" >Number of classes (default quantiles): </label>
+            <select id="numQuantiles">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+            </select>
 
-                <!-- Dropdown menu for selecting number of quantiles -->
-                <label for="numQuantiles">Number of classes (quantiles):</label>
-                <select id="numQuantiles">
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                    <option value="8">8</option>
-                    <option value="9">9</option>
-                    <option value="10">10</option>
-                </select>
-
-                <!-- Form for setting quantile ranges and colors -->
-                <div id="quantileForm">
-                    <div id="quantileInputs"></div>
-                </div>
+            <!-- Form for setting quantile ranges and colors -->
+            <div id="quantileForm"> <!-- because nested form tag is not present in DOM -->
+                <div id="quantileInputs"></div>
+            </div>
 
 
-            </form>
-        </div>
+        </form>
     </div>
 
 </div>
@@ -65,7 +65,12 @@
     var markers = [];
     data.forEach(function (point) {
         // Create marker
-        var marker = L.marker([point.LATITUDE, point.LONGITUDE]).addTo(map);
+        var marker = L.marker([point.LATITUDE, point.LONGITUDE], {
+                icon: L.divIcon({
+                    className: 'custom-marker'
+                })
+            }
+        ).addTo(map);
         markers.push(marker);
 
         // Set marker properties
@@ -160,7 +165,6 @@
 
 
     function numQuantilesChanged() {
-        console.log('numQuantilesChanged called');
         // Get the selected number of quantiles
         const numQuantiles = this.value;
 
@@ -168,7 +172,7 @@
         document.getElementById('quantileInputs').innerHTML = '';
 
             // Add inputs for each quantile range
-            for (let i = 0; i < numQuantiles - 1; i++) {
+            for (let i = 0; i < numQuantiles; i++) {
                 // Create a div for the quantile input
                 const quantileDiv = document.createElement('div');
 
@@ -188,7 +192,7 @@
                 const colorInput = document.createElement('input');
                 colorInput.type = 'color';
                 colorInput.name = 'color' + (i + 1);
-                colorInput.value = '#000000';  // default to black
+                colorInput.value = '#dc143c';       // default crimson
                 quantileDiv.appendChild(colorInput);
 
                 // Add the quantile input div to the page
@@ -205,7 +209,7 @@
 
         // Get the colors for each quantile range
         const colors = {};
-        for (let i = 0; i < numQuantiles - 1; i++) {
+        for (let i = 0; i < numQuantiles; i++) {
             const colorInput = document.querySelector('input[name="color' + (i + 1) + '"]');
             colors[i] = colorInput.value;
         }
@@ -213,12 +217,13 @@
         // Update the marker colors based on the data value and quantile ranges
         markers.forEach(function (marker) {
             const value = marker.feature.properties[dataColumn];
-            for (let i = 0; i < numQuantiles - 1; i++) {
-                if (value >= quantileRanges[dataColumn][numQuantiles][i] && value < quantileRanges[dataColumn][numQuantiles][i + 1]) {
-                    marker.setIcon(L.divIcon({
-                        className: 'marker-icon',
-                        html: '<div style="background-color: ' + colors[i] + ';"></div>'
-                    }));
+            for (let i = 0; i < numQuantiles; i++) {
+                if (value >= quantileRanges[dataColumn][numQuantiles][i] && value <= quantileRanges[dataColumn][numQuantiles][i + 1]) {     // Check if the value is within the quantile range
+                    marker._icon.style.backgroundColor = colors[i];     // set marker's colour to quantile colour
+                    // marker.setIcon(L.divIcon({
+                    //     className: 'custom-marker',
+                    //     html: '<div style="background-color: ' + colors[i] + ';"></div>'
+                    // }));
                 }
             }
         });
