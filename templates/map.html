@@ -164,10 +164,7 @@
 
 
 
-    function numQuantilesChanged() {
-        // Get the selected number of quantiles
-        const numQuantiles = this.value;
-
+    function numQuantilesChanged(numQuantiles) {
         // Clear the current quantile inputs
         document.getElementById('quantileInputs').innerHTML = '';
 
@@ -201,9 +198,6 @@
         }
 
     function quantileInputChanged(event) {
-        // Check if the event target is within the quantile form
-        if (!event.target.closest('#quantileForm')) return;
-
         // Get the selected number of quantiles
         const numQuantiles = document.getElementById('numQuantiles').value;
 
@@ -233,10 +227,15 @@
     // Wait for the document to be fully loaded before setting up the event listeners
     document.addEventListener('DOMContentLoaded', function () {
         // Handle changes to the number of quantiles dropdown
-        document.getElementById('numQuantiles').addEventListener('change', numQuantilesChanged);
+        document.getElementById('numQuantiles').addEventListener('change', function () {
+            numQuantilesChanged(this.value);
+        });
+        // Initialize the quantile inputs with 1 quantile
+        numQuantilesChanged(1);
 
-        // Handle changes to the quantile inputs using event delegation
-        document.addEventListener('change', quantileInputChanged);
+        // Handle changes to the quantile inputs
+        document.getElementById('quantileForm').addEventListener('change', quantileInputChanged);
+
     });
 
 </script>

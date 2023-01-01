@@ -21,6 +21,7 @@ def index_map():
     for attribute in numerical_attributes:
         quantile_ranges = {}
         for i in range(1, 11):  # 1 is the whole range
+            # linspace returns evenly spaced i+1 numbers from interval (0, 1)
             # tolist() because quantile returns series - not JSON serializable
             quantile_ranges[i] = df[attribute].quantile(np.linspace(0, 1, i+1)).tolist()
         # Add the quantile ranges for the attribute to the dictionary
