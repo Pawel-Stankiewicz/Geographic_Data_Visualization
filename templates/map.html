@@ -197,9 +197,15 @@
             }
         }
 
-    function quantileInputChanged(event) {
+    function updateMarkerColors() {
         // Get the selected number of quantiles
         const numQuantiles = document.getElementById('numQuantiles').value;
+
+        // Update the quantile ranges with the input values
+        for (let i = 0; i < numQuantiles; i++) {
+            const quantileInput = document.querySelector('input[name="quantile' + (i + 1) + '"]');
+            quantileRanges[dataColumn][numQuantiles][i] = quantileInput.value;
+        }
 
         // Get the colors for each quantile range
         const colors = {};
@@ -211,13 +217,9 @@
         // Update the marker colors based on the data value and quantile ranges
         markers.forEach(function (marker) {
             const value = marker.feature.properties[dataColumn];
-            for (let i = 0; i < numQuantiles; i++) {
-                if (value >= quantileRanges[dataColumn][numQuantiles][i] && value <= quantileRanges[dataColumn][numQuantiles][i + 1]) {     // Check if the value is within the quantile range
+            for (let i = 0; i < numQuantiles; i++) {    // >= and <= are used to include the max value in the last quantile range
+                if (value >= quantileRanges[dataColumn][numQuantiles][i] && value <= quantileRanges[dataColumn][numQuantiles][i + 1]) {
                     marker._icon.style.backgroundColor = colors[i];     // set marker's colour to quantile colour
-                    // marker.setIcon(L.divIcon({
-                    //     className: 'custom-marker',
-                    //     html: '<div style="background-color: ' + colors[i] + ';"></div>'
-                    // }));
                 }
             }
         });
@@ -234,7 +236,7 @@
         numQuantilesChanged(1);
 
         // Handle changes to the quantile inputs
-        document.getElementById('quantileForm').addEventListener('change', quantileInputChanged);
+        document.getElementById('quantileForm').addEventListener('change', updateMarkerColors);
 
     });
 
