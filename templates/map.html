@@ -25,7 +25,7 @@
                 <input id="max-range" type="number" oninput="updateRange()">    <!-- oninput is triggered when the value changes -->
             </div>
             <!-- Dropdown menu for selecting number of quantiles -->
-            <label for="numQuantiles" id="quantiles-label" >Number of classes (default quantiles): </label>
+            <label for="numQuantiles" id="numQuantiles-label" >Number of classes (default quantiles): </label>
             <select id="numQuantiles">
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -111,7 +111,7 @@
         max = range[1];
         markers.forEach(function (marker) {
             var value = marker.feature.properties[dataColumn];
-            marker.setOpacity((value >= min && value <= max) ? 1 : 0.1);
+            marker.setOpacity((value >= min && value <= max) ? 1 : 0);
         });
     }
 
@@ -172,10 +172,11 @@
             for (let i = 0; i < numQuantiles; i++) {
                 // Create a div for the quantile input
                 const quantileDiv = document.createElement('div');
+                quantileDiv.className = 'class-inputs';
 
                 // Create a label for the quantile input
                 const quantileLabel = document.createElement('label');
-                quantileLabel.innerHTML = 'Quantile ' + (i + 1);
+                quantileLabel.innerHTML = 'C. ' + (i + 1) + '. > ';
                 quantileDiv.appendChild(quantileLabel);
 
                 // Create a number input for the quantile range
@@ -192,6 +193,13 @@
                 colorInput.value = '#dc143c';       // default crimson
                 quantileDiv.appendChild(colorInput);
 
+                // Create a checkbox to toggle the visibility of the quantile range
+                const visibilityCheckbox = document.createElement('input');
+                visibilityCheckbox.type = 'checkbox';
+                visibilityCheckbox.name = 'visibility' + (i + 1);
+                visibilityCheckbox.checked = true;  // default to checked
+                quantileDiv.appendChild(visibilityCheckbox);
+
                 // Add the quantile input div to the page
                 document.getElementById('quantileInputs').appendChild(quantileDiv);
             }
@@ -202,16 +210,20 @@
         const numQuantiles = document.getElementById('numQuantiles').value;
 
         // Update the quantile ranges with the input values
-        for (let i = 0; i < numQuantiles; i++) {
+        for (let i = 0; i < numQuantiles; i++) {    // for each quantile
             const quantileInput = document.querySelector('input[name="quantile' + (i + 1) + '"]');
             quantileRanges[dataColumn][numQuantiles][i] = quantileInput.value;
         }
 
-        // Get the colors for each quantile range
+        // Get the colors and visibility for each quantile range
         const colors = {};
+        const visibility = {};
         for (let i = 0; i < numQuantiles; i++) {
             const colorInput = document.querySelector('input[name="color' + (i + 1) + '"]');
             colors[i] = colorInput.value;
+
+            const visibilityCheckbox = document.querySelector('input[name="visibility' + (i + 1) + '"]');
+            visibility[i] = visibilityCheckbox.checked;
         }
 
         // Update the marker colors based on the data value and quantile ranges
@@ -220,6 +232,7 @@
             for (let i = 0; i < numQuantiles; i++) {    // >= and <= are used to include the max value in the last quantile range
                 if (value >= quantileRanges[dataColumn][numQuantiles][i] && value <= quantileRanges[dataColumn][numQuantiles][i + 1]) {
                     marker._icon.style.backgroundColor = colors[i];     // set marker's colour to quantile colour
+                    marker._icon.style.opacity = visibility[i] ? 1 : 0;   // set marker's opacity to quantile visibility
                 }
             }
         });
