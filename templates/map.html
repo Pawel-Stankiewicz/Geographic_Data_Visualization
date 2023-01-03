@@ -25,7 +25,7 @@
                 <input id="max-range" type="number" oninput="updateRange()">    <!-- oninput is triggered when the value changes -->
             </div>
             <!-- Dropdown menu for selecting number of quantiles -->
-            <label for="numQuantiles" id="numQuantiles-label" >Number of classes (default quantiles): </label>
+            <label for="numQuantiles" id="numQuantiles-label" >Number of classes (C). Default quantiles: </label>
             <select id="numQuantiles">
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -104,16 +104,6 @@
     document.getElementById('min-range').value = min;
     document.getElementById('max-range').value = max;
 
-    // Update marker visibility based on dataColumn values
-    function updateMarkersVisibility() {
-        var range = slider.noUiSlider.get();
-        min = range[0];
-        max = range[1];
-        markers.forEach(function (marker) {
-            var value = marker.feature.properties[dataColumn];
-            marker.setOpacity((value >= min && value <= max) ? 1 : 0);
-        });
-    }
 
     // Update map with dataColumn values
     function displaySelectedDataColumn() {
@@ -141,6 +131,19 @@
 
         // Update marker visibility
         updateMarkersVisibility();
+        // Update class ranges
+        numQuantilesChanged(document.getElementById('numQuantiles').value)
+    }
+
+    // Update marker visibility based on dataColumn values and range slider values
+    function updateMarkersVisibility() {
+        var range = slider.noUiSlider.get();
+        min = range[0];
+        max = range[1];
+        markers.forEach(function (marker) {
+            var value = marker.feature.properties[dataColumn];
+            marker.setOpacity((value >= min && value <= max) ? 1 : 0);
+        });
     }
 
     // Update range slider with input field values
