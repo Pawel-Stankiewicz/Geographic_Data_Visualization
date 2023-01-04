@@ -171,7 +171,23 @@
         // Clear the current quantile inputs
         document.getElementById('quantileInputs').innerHTML = '';
 
-            // Add inputs for each quantile range
+        // Define the color palette
+        const palette = ['#003c00', '#005a00', '#007800', '#857800', '#c87600',
+                        '#ff7600', '#ff8181', '#ffb2ff', '#ffffff' ];
+
+        // Generate a list of colors from the palette
+        const colors = [];
+        if (numQuantiles == 1) {
+            colors.push('#dc143c');
+        } else {
+            for (let i = 0; i < numQuantiles; i++) {
+                // the last -1 because length starts at 1 and index at 0
+                colors[i] = palette[Math.floor(i / (numQuantiles-1) * (palette.length - 1))];
+            }
+        }
+
+
+        // Add inputs for each quantile range
             for (let i = 0; i < numQuantiles; i++) {
                 // Create a div for the quantile input
                 const quantileDiv = document.createElement('div');
@@ -193,7 +209,7 @@
                 const colorInput = document.createElement('input');
                 colorInput.type = 'color';
                 colorInput.name = 'color' + (i + 1);
-                colorInput.value = '#dc143c';       // default crimson
+                colorInput.value = colors[i];
                 quantileDiv.appendChild(colorInput);
 
                 // Create a checkbox to toggle the visibility of the quantile range
@@ -206,6 +222,7 @@
                 // Add the quantile input div to the page
                 document.getElementById('quantileInputs').appendChild(quantileDiv);
             }
+        updateMarkerColors();
         }
 
     function updateMarkerColors() {
