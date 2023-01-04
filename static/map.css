@@ -51,7 +51,7 @@ input[type="number"] {
     max-width: 5em;
 }
 
-#numQuantiles-label {
+#numRanges-label {
     font-size: 1.2em;
     text-align: center;
     margin-top: 20px;
@@ -62,7 +62,7 @@ input[type="number"] {
     padding: 3px;
     align-self: center;
 }
-#numQuantiles {
+#numRanges {
     width: 3em;
     flex: 0 0 auto;
     align-self: center;
@@ -71,7 +71,7 @@ input[type="number"] {
 .class-inputs {
     white-space: nowrap;
 }
-#quantileInputs {
+#rangeInputs {
     background-color: white;
     padding: 3px;
     border-radius: 5px;

@@ -10,8 +10,8 @@
 <body>
 <div id="map" >
     <div id = "data-controls">
-        <!-- Dropdown menu -->
         <form id="form" class="flex-column">
+            <!-- Dropdown menu -->
             <select id="dataColumn" class="form-item" onchange="displaySelectedDataColumn()">
                 {% for column in numerical_attributes %}
                 <option value="{{ column }}">{{ column }}</option>
@@ -24,9 +24,9 @@
                 <input id="min-range" type="number" oninput="updateRange()">    <!-- oninput is triggered when the value changes -->
                 <input id="max-range" type="number" oninput="updateRange()">    <!-- oninput is triggered when the value changes -->
             </div>
-            <!-- Dropdown menu for selecting number of quantiles -->
-            <label for="numQuantiles" id="numQuantiles-label" >Number of classes (C). Default quantiles: </label>
-            <select id="numQuantiles">
+            <!-- Dropdown menu for selecting number of ranges -->
+            <label for="numRanges" id="numRanges-label" >Number of ranges (R.), default quantiles: </label>
+            <select id="numRanges">
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -39,9 +39,9 @@
                 <option value="10">10</option>
             </select>
 
-            <!-- Form for setting quantile ranges and colors -->
-            <div id="quantileForm"> <!-- because nested form tag is not present in DOM -->
-                <div id="quantileInputs"></div>
+            <!-- Form for setting ranges and colors -->
+            <div id="rangeForm"> <!-- because nested form tag is not present in DOM -->
+                <div id="rangeInputs"></div>
             </div>
 
 
@@ -59,7 +59,7 @@
 
 <script>
     const data = JSON.parse({{ data|tojson }});     // data is a jinja variable
-    const quantileRanges = JSON.parse({{ quantile_ranges|tojson }});
+    const ranges = JSON.parse({{ quantile_ranges|tojson }});
 
     // Add markers to map
     var markers = [];
@@ -97,10 +97,6 @@
     });
 
     // Update input numbers with range values
-    // var minRangeInput = document.getElementById('min-range');
-    // var maxRangeInput = document.getElementById('max-range');
-    // minRangeInput.value = min;
-    // maxRangeInput.value = max;
     document.getElementById('min-range').value = min;
     document.getElementById('max-range').value = max;
 
@@ -124,15 +120,12 @@
             }
         });
         // Update input numbers with range values
-        // minRangeInput.value = min;
-        // maxRangeInput.value = max;
         document.getElementById('min-range').value = min;
         document.getElementById('max-range').value = max;
 
-        // Update marker visibility
         updateMarkersVisibility();
         // Update class ranges
-        numQuantilesChanged(document.getElementById('numQuantiles').value)
+        numRangesChanged(document.getElementById('numRanges').value)
     }
 
     // Update marker visibility based on dataColumn values and range slider values
@@ -167,78 +160,77 @@
 
 
 
-    function numQuantilesChanged(numQuantiles) {
-        // Clear the current quantile inputs
-        document.getElementById('quantileInputs').innerHTML = '';
+    function numRangesChanged(numRanges) {
+        // Clear the current range inputs
+        document.getElementById('rangeInputs').innerHTML = '';
 
-        // Define the color palette
         const palette = ['#003c00', '#005a00', '#007800', '#857800', '#c87600',
                         '#ff7600', '#ff8181', '#ffb2ff', '#ffffff' ];
 
         // Generate a list of colors from the palette
         const colors = [];
-        if (numQuantiles == 1) {
+        if (numRanges == 1) {
             colors.push('#dc143c');
         } else {
-            for (let i = 0; i < numQuantiles; i++) {
+            for (let i = 0; i < numRanges; i++) {
                 // the last -1 because length starts at 1 and index at 0
-                colors[i] = palette[Math.floor(i / (numQuantiles-1) * (palette.length - 1))];
+                colors[i] = palette[Math.floor(i / (numRanges-1) * (palette.length - 1))];
             }
         }
 
 
-        // Add inputs for each quantile range
-            for (let i = 0; i < numQuantiles; i++) {
-                // Create a div for the quantile input
-                const quantileDiv = document.createElement('div');
-                quantileDiv.className = 'class-inputs';
+            // Add inputs for each range
+            for (let i = 0; i < numRanges; i++) {
+                // Create a div for the range input
+                const rangeDiv = document.createElement('div');
+                rangeDiv.className = 'class-inputs';
 
-                // Create a label for the quantile input
-                const quantileLabel = document.createElement('label');
-                quantileLabel.innerHTML = 'C. ' + (i + 1) + '. > ';
-                quantileDiv.appendChild(quantileLabel);
+                // Create a label for the range input
+                const rangeLabel = document.createElement('label');
+                rangeLabel.innerHTML = 'R. ' + (i + 1) + '. > ';
+                rangeDiv.appendChild(rangeLabel);
 
-                // Create a number input for the quantile range
-                const quantileInput = document.createElement('input');
-                quantileInput.type = 'number';
-                quantileInput.name = 'quantile' + (i + 1);
-                quantileInput.value = quantileRanges[dataColumn][numQuantiles][i];
-                quantileDiv.appendChild(quantileInput);
+                // Create a number input for the range
+                const rangeInput = document.createElement('input');
+                rangeInput.type = 'number';
+                rangeInput.name = 'range' + (i + 1);
+                rangeInput.value = ranges[dataColumn][numRanges][i];
+                rangeDiv.appendChild(rangeInput);
 
-                // Create a color input for the quantile range
+                // Create a color input for the range
                 const colorInput = document.createElement('input');
                 colorInput.type = 'color';
                 colorInput.name = 'color' + (i + 1);
                 colorInput.value = colors[i];
-                quantileDiv.appendChild(colorInput);
+                rangeDiv.appendChild(colorInput);
 
-                // Create a checkbox to toggle the visibility of the quantile range
+                // Create a checkbox to toggle the visibility of the range
                 const visibilityCheckbox = document.createElement('input');
                 visibilityCheckbox.type = 'checkbox';
                 visibilityCheckbox.name = 'visibility' + (i + 1);
                 visibilityCheckbox.checked = true;  // default to checked
-                quantileDiv.appendChild(visibilityCheckbox);
+                rangeDiv.appendChild(visibilityCheckbox);
 
-                // Add the quantile input div to the page
-                document.getElementById('quantileInputs').appendChild(quantileDiv);
+                // Add the range input div to the page
+                document.getElementById('rangeInputs').appendChild(rangeDiv);
             }
         updateMarkerColors();
         }
 
     function updateMarkerColors() {
-        // Get the selected number of quantiles
-        const numQuantiles = document.getElementById('numQuantiles').value;
+        // Get the selected number of ranges
+        const numRanges = document.getElementById('numRanges').value;
 
-        // Update the quantile ranges with the input values
-        for (let i = 0; i < numQuantiles; i++) {    // for each quantile
-            const quantileInput = document.querySelector('input[name="quantile' + (i + 1) + '"]');
-            quantileRanges[dataColumn][numQuantiles][i] = quantileInput.value;
+        // Update the ranges with the input values
+        for (let i = 0; i < numRanges; i++) {    // for each range
+            const rangeInput = document.querySelector('input[name="range' + (i + 1) + '"]');
+            ranges[dataColumn][numRanges][i] = rangeInput.value;
         }
 
-        // Get the colors and visibility for each quantile range
+        // Get the colors and visibility for each range
         const colors = {};
         const visibility = {};
-        for (let i = 0; i < numQuantiles; i++) {
+        for (let i = 0; i < numRanges; i++) {
             const colorInput = document.querySelector('input[name="color' + (i + 1) + '"]');
             colors[i] = colorInput.value;
 
@@ -246,13 +238,13 @@
             visibility[i] = visibilityCheckbox.checked;
         }
 
-        // Update the marker colors based on the data value and quantile ranges
+        // Update the marker colors based on the data value and ranges
         markers.forEach(function (marker) {
             const value = marker.feature.properties[dataColumn];
-            for (let i = 0; i < numQuantiles; i++) {    // >= and <= are used to include the max value in the last quantile range
-                if (value >= quantileRanges[dataColumn][numQuantiles][i] && value <= quantileRanges[dataColumn][numQuantiles][i + 1]) {
-                    marker._icon.style.backgroundColor = colors[i];     // set marker's colour to quantile colour
-                    marker._icon.style.opacity = visibility[i] ? 1 : 0;   // set marker's opacity to quantile visibility
+            for (let i = 0; i < numRanges; i++) {    // >= and <= are used to include the max value in the last range
+                if (value >= ranges[dataColumn][numRanges][i] && value <= ranges[dataColumn][numRanges][i + 1]) {
+                    marker._icon.style.backgroundColor = colors[i];     // set marker's colour to range colour
+                    marker._icon.style.opacity = visibility[i] ? 1 : 0;   // set marker's opacity to range visibility
                 }
             }
         });
@@ -261,15 +253,15 @@
 
     // Wait for the document to be fully loaded before setting up the event listeners
     document.addEventListener('DOMContentLoaded', function () {
-        // Handle changes to the number of quantiles dropdown
-        document.getElementById('numQuantiles').addEventListener('change', function () {
-            numQuantilesChanged(this.value);
+        // Handle changes to the number of ranges dropdown
+        document.getElementById('numRanges').addEventListener('change', function () {
+            numRangesChanged(this.value);
         });
-        // Initialize the quantile inputs with 1 quantile
-        numQuantilesChanged(1);
+        // Initialize the range inputs with 1 range
+        numRangesChanged(1);
 
-        // Handle changes to the quantile inputs
-        document.getElementById('quantileForm').addEventListener('change', updateMarkerColors);
+        // Handle changes to the range inputs
+        document.getElementById('rangeForm').addEventListener('change', updateMarkerColors);
 
     });
 
