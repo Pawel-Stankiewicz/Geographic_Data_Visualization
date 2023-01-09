@@ -73,7 +73,7 @@
 <script src="{{ url_for('static', filename='nouislider.js') }}"></script>
 
 <script>
-    const data = JSON.parse({{ data|tojson }});     // data is a jinja variable
+    const data = JSON.parse({{ data|tojson }});     // data is a jinja variable and is from csv
     const ranges = JSON.parse({{ quantile_ranges|tojson }});
     // Default side length for markers
     let sideLength = 12;
@@ -96,6 +96,15 @@
         marker.feature = {
             properties: point
         };
+        // Add tooltips and popups to markers
+        let content = '<table>';
+        const properties = marker.feature.properties;
+        for (const key in properties) {
+            content += '<tr><td>' + key + '</td><td>' + properties[key] + '</td></tr>';
+        }
+        content += '</table>';
+        marker.bindPopup(content);
+        marker.bindTooltip(content);
     });
 
     // Initialize range slider
