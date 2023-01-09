@@ -11,22 +11,22 @@
 <div id="map" >
     <div id = "data-controls">
         <form id="form" class="flex-column">
-            <!-- Dropdown menu -->
-            <select id="dataColumn" class="form-item" onchange="displaySelectedDataColumn()">
+            <!-- Data column dropdown menu -->
+            <select id="data-column" class="form-item" onchange="displaySelectedDataColumn()">
                 {% for column in numerical_attributes %}
                 <option value="{{ column }}">{{ column }}</option>
                 {% endfor %}
             </select>
 
-            <!-- Range slider for dataColumn values -->
+            <!-- Range slider for data column values -->
             <div id="slider"></div>
             <div id="slider-inputs">
                 <input id="min-range" type="number" oninput="updateRange()">    <!-- oninput is triggered when the value changes -->
                 <input id="max-range" type="number" oninput="updateRange()">    <!-- oninput is triggered when the value changes -->
             </div>
             <!-- Dropdown menu for selecting number of ranges -->
-            <label for="numRanges" id="numRanges-label" >Number of ranges (R.), default quantiles: </label>
-            <select id="numRanges">
+            <label for="num-ranges" class="form-label" >Number of ranges (R.), default quantiles: </label>
+            <select id="num-ranges">
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -40,14 +40,29 @@
             </select>
 
             <!-- Form for setting ranges and colors -->
-            <div id="rangeForm"> <!-- because nested form tag is not present in DOM -->
-                <div id="rangeInputs"></div>
+            <div id="range-form"> <!-- because nested form tag is not present in DOM -->
+                <div id="range-inputs"></div>
             </div>
+
+
+            <div id="markers-side-slider"></div>
+            <label for="markers-side-slider" class="form-label"> Max marker size (px)</label>
+            <div class="break2em"></div>
+            <label class="form-label checkbox-label"> Check to display values as markers areas.
+                Change which data is displayed below.
+                <input type="checkbox" id="marker-size-toggle">
+            </label>
+            <!-- Data column dropdown menu -->
+            <select id="data-column-as-areas" class="form-item">
+                {% for column in numerical_attributes %}
+                <option value="{{ column }}">{{ column }}</option>
+                {% endfor %}
+            </select>
+
 
 
         </form>
     </div>
-
 </div>
 
 
@@ -60,14 +75,18 @@
 <script>
     const data = JSON.parse({{ data|tojson }});     // data is a jinja variable
     const ranges = JSON.parse({{ quantile_ranges|tojson }});
+    // Default side length for markers
+    let sideLength = 12;
 
     // Add markers to map
-    var markers = [];
+    const markers = [];
     data.forEach(function (point) {
         // Create marker
-        var marker = L.marker([point.LATITUDE, point.LONGITUDE], {
+        const marker = L.marker([point.LATITUDE, point.LONGITUDE], {
                 icon: L.divIcon({
-                    className: 'custom-marker'
+                    className: 'custom-marker',
+                    iconSize: [sideLength, sideLength],  // default icon size is 12px
+                    iconAnchor: [sideLength / 2, sideLength / 2]  // position of geographic location in marker
                 })
             }
         ).addTo(map);
@@ -80,13 +99,13 @@
     });
 
     // Initialize range slider
-    var slider = document.getElementById('slider');
-    var dataColumn = document.getElementById('dataColumn').value;
-    var values = data.map(function (point) {
+    const slider = document.getElementById('slider');
+    let dataColumn = document.getElementById('data-column').value;
+    let values = data.map(function (point) {
         return point[dataColumn];
     });
-    var min = Math.min.apply(Math, values);
-    var max = Math.max.apply(Math, values);
+    let min = Math.min.apply(Math, values);
+    let max = Math.max.apply(Math, values);
     noUiSlider.create(slider, {
         start: [min, max],
         range: {
@@ -100,11 +119,23 @@
     document.getElementById('min-range').value = min;
     document.getElementById('max-range').value = max;
 
+    // Initialize markers' side length slider
+    noUiSlider.create(document.getElementById('markers-side-slider'), {
+        start: sideLength,
+        tooltips: true,
+        step: 1,
+        connect: [true, false],
+        range: {
+            'min': 0,
+            'max': 50
+        }
+    });
+
 
     // Update map with dataColumn values
     function displaySelectedDataColumn() {
         // Get selected dataColumn and values
-        dataColumn = document.getElementById('dataColumn').value;
+        dataColumn = document.getElementById('data-column').value;
         values = data.map(function (point) {
             return point[dataColumn];
         });
@@ -125,16 +156,17 @@
 
         updateMarkersVisibility();
         // Update class ranges
-        numRangesChanged(document.getElementById('numRanges').value)
+        numRangesChanged(document.getElementById('num-ranges').value)
+        updateMarkerSizes();
     }
 
     // Update marker visibility based on dataColumn values and range slider values
     function updateMarkersVisibility() {
-        var range = slider.noUiSlider.get();
+        const range = slider.noUiSlider.get();
         min = range[0];
         max = range[1];
         markers.forEach(function (marker) {
-            var value = marker.feature.properties[dataColumn];
+            const value = marker.feature.properties[dataColumn];
             marker.setOpacity((value >= min && value <= max) ? 1 : 0);
         });
     }
@@ -144,11 +176,11 @@
         min = document.getElementById('min-range').value;
         max = document.getElementById('max-range').value;
         slider.noUiSlider.set([min, max]);
-        updateMarkersVisibility()             // Update marker visibility
+        updateMarkersVisibility()
     }
     // Set up event listeners for range slider and input fields
     slider.noUiSlider.on('slide', function(values) {
-        updateMarkersVisibility();        // Update marker visibility
+        updateMarkersVisibility();
         document.getElementById('min-range').value = values[0];
         document.getElementById('max-range').value = values[1];
     });
@@ -162,7 +194,7 @@
 
     function numRangesChanged(numRanges) {
         // Clear the current range inputs
-        document.getElementById('rangeInputs').innerHTML = '';
+        document.getElementById('range-inputs').innerHTML = '';
 
         const palette = ['#003c00', '#005a00', '#007800', '#857800', '#c87600',
                         '#ff7600', '#ff8181', '#ffb2ff', '#ffffff' ];
@@ -177,8 +209,6 @@
                 colors[i] = palette[Math.floor(i / (numRanges-1) * (palette.length - 1))];
             }
         }
-
-
             // Add inputs for each range
             for (let i = 0; i < numRanges; i++) {
                 // Create a div for the range input
@@ -212,14 +242,13 @@
                 rangeDiv.appendChild(visibilityCheckbox);
 
                 // Add the range input div to the page
-                document.getElementById('rangeInputs').appendChild(rangeDiv);
+                document.getElementById('range-inputs').appendChild(rangeDiv);
             }
         updateMarkerColors();
         }
 
     function updateMarkerColors() {
-        // Get the selected number of ranges
-        const numRanges = document.getElementById('numRanges').value;
+        const numRanges = document.getElementById('num-ranges').value;
 
         // Update the ranges with the input values
         for (let i = 0; i < numRanges; i++) {    // for each range
@@ -235,7 +264,7 @@
             colors[i] = colorInput.value;
 
             const visibilityCheckbox = document.querySelector('input[name="visibility' + (i + 1) + '"]');
-            visibility[i] = visibilityCheckbox.checked;
+            visibility[i] = visibilityCheckbox.checked; // true or false
         }
 
         // Update the marker colors based on the data value and ranges
@@ -250,18 +279,57 @@
         });
     }
 
+    // Add event listener for checkbox
+    document.getElementById('marker-size-toggle').addEventListener('change', updateMarkerSizes);
+    // Add event listener for slider
+    document.getElementById('markers-side-slider').noUiSlider.on('slide', function (values, handle) {
+        // Update max side length for markers
+        sideLength = values[handle];    // values is an array of values, handle is the index of the handle that was moved
+        updateMarkerSizes();
+    });
 
-    // Wait for the document to be fully loaded before setting up the event listeners
+    // Make squares' areas proportional to the data value
+    function updateMarkerSizes() {
+        const dataColumnAsAreas = document.getElementById('data-column-as-areas').value;
+        if (document.getElementById('marker-size-toggle').checked) {
+            markers.forEach(function (marker) {
+                const value = marker.feature.properties[dataColumnAsAreas];
+                // MaxValue will have sideLength
+                // Get the max value in a column. ... is the spread operator which converts an array to a list of arguments
+                const maxValue = Math.max(...data.map(point => point[dataColumnAsAreas]));
+                // To calculate proportional area, use the square root of side length
+                const iSideLength = Math.sqrt(value / maxValue) * sideLength;
+                marker.setIcon(L.divIcon({
+                    className: 'custom-marker',
+                    iconSize: [iSideLength, iSideLength],
+                    iconAnchor: [iSideLength / 2, iSideLength / 2]
+                }));
+            });
+        } else {
+            // Reset marker sizes to default
+            markers.forEach(function (marker) {
+                marker.setIcon(L.divIcon({
+                    className: 'custom-marker',
+                    iconSize: [sideLength, sideLength],
+                    iconAnchor: [sideLength / 2, sideLength / 2]
+                }));
+            });
+        }
+    }
+
+    // Add event listeners after the page has loaded
     document.addEventListener('DOMContentLoaded', function () {
         // Handle changes to the number of ranges dropdown
-        document.getElementById('numRanges').addEventListener('change', function () {
+        document.getElementById('num-ranges').addEventListener('change', function () {
             numRangesChanged(this.value);
         });
         // Initialize the range inputs with 1 range
         numRangesChanged(1);
 
         // Handle changes to the range inputs
-        document.getElementById('rangeForm').addEventListener('change', updateMarkerColors);
+        document.getElementById('range-form').addEventListener('change', updateMarkerColors);
+        // Handle changes to data-column-as-areas dropdown
+        document.getElementById('data-column-as-areas').addEventListener('change', updateMarkerSizes);
 
     });
 

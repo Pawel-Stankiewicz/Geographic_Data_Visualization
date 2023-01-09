@@ -5,17 +5,19 @@ body, html { height: 100%; margin: 0;}
     height: 100%;
     position: relative
 }
+.leaflet-control-zoom {
+    position: absolute;
+    left: 220px;
+}
+
 .custom-marker {
     background-color: crimson;
-    width: 20px;
-    height: 20px;
     border: 2px solid cyan;
 }
 
 
 #data-controls {
     position: absolute;
-    top: 100px;
     left: 5px;
 }
 .flex-column {
@@ -46,23 +48,22 @@ body, html { height: 100%; margin: 0;}
 #slider-inputs {
     display: flex;
     justify-content: space-between;
+    margin-bottom: 2em;
 }
 input[type="number"] {
     max-width: 5em;
 }
 
-#numRanges-label {
-    font-size: 1.2em;
+.form-label {
     text-align: center;
-    margin-top: 20px;
     background-color: white;
     flex: 0 0 auto;
     width: auto;
     border-radius: 5px;
-    padding: 3px;
+    padding: 5px;
     align-self: center;
 }
-#numRanges {
+#num-ranges {
     width: 3em;
     flex: 0 0 auto;
     align-self: center;
@@ -71,7 +72,7 @@ input[type="number"] {
 .class-inputs {
     white-space: nowrap;
 }
-#rangeInputs {
+#range-inputs {
     background-color: white;
     padding: 3px;
     border-radius: 5px;
@@ -80,4 +81,15 @@ input[type="number"] {
 input[type="checkbox"] {
     height: 20px;
     width: 20px;
+}
+
+#markers-side-slider {
+    margin-top: 50px;
+}
+.break2em {
+    margin: 1em;
+}
+.checkbox-label {
+    display: flex;
+    align-items: center;
 }
