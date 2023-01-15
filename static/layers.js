@@ -110,6 +110,6 @@ L.control.scale().addTo(map);
 // Load the map settings from local storage
 loadMapSettings();
 
-// Save the map settings to local storage when the map is moved or zoomed. on ads an event listner
+// Save the map settings to local storage when the map is moved or zoomed. on ads an event listener
 map.on('moveend', saveMapSettings);
 

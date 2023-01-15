@@ -59,6 +59,12 @@
             </select>
         </form>
     </div>
+    <form id="upload-form" class="form-label "method="post" enctype="multipart/form-data" action="/upload">
+        <label id="upload-label" for="file-input">Upload a CSV with lat long columns to display data on the map:
+            <input type="file" name="file" id="file-input" accept=".csv"  required>
+        </label>
+        <input type="submit" value="Upload">
+    </form>
 </div>
 
 <script>

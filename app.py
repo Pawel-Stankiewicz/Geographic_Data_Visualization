@@ -1,16 +1,49 @@
-from flask import Flask, render_template, request
-from csv_handler import process_csv
-import csv
+from flask import Flask, redirect, render_template, request
 import json
 import numpy as np
 import pandas as pd
+import random
+from sqlalchemy import create_engine
+import string
+from werkzeug.utils import secure_filename
+
 
 app = Flask(__name__)
+app.config['ALLOWED_EXTENSIONS'] = {'csv'}
+app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024     # maximum size for an incoming file is 20MB
 
-@app.route('/')
-def index_map():
-    # Read data from CSV file
-    df = pd.read_csv('data/12.csv')
+@app.route('/upload', methods=['POST'])
+def upload():
+    file = request.files['file']
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        # Generate a unique identifier for the file
+        data_id = "".join(random.choices(string.ascii_letters + string.digits, k=9))
+        data_id = data_id.lower()
+
+        df = pd.read_csv(file)
+
+        # Connect to the SQLite database
+        engine = create_engine('sqlite:///data.db')
+
+        # Store the DataFrame in the database as table with a name = identifier
+        df.to_sql(data_id, engine, if_exists='replace', index=False)
+
+        return redirect(f'/map/{data_id}')
+    else:
+        return "Invalid file type or file size exceeded 20MB"
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+@app.route('/map/<data_id>')
+def map(data_id):
+    # Connect to the SQLite database
+    engine = create_engine('sqlite:///data.db')
+
+    df = pd.read_sql_table(data_id, engine)
+
     # Convert to JSON
     data = df.to_json(orient='records')
     # Get list of numerical attributes. _get_num... returns new DF containing only the numerical columns
@@ -30,31 +63,12 @@ def index_map():
     # Convert the quantile ranges to a JSON object for use in the template
     quantile_ranges_json = json.dumps(all_quantile_ranges)
 
-
-# Pass data to Jinja2 template
+    # Pass data to Jinja2 template
     return render_template('map.html', data=data, numerical_attributes=numerical_attributes, quantile_ranges=quantile_ranges_json)
 
-@app.route('/upload_csv', methods=['POST'])
-def upload_csv():
-    if 'csv_file' not in request.files:
-        return render_template('map.html', error="No file uploaded")
-
-    csv_file = request.files['csv_file']
-
-    if not csv_file or csv_file.filename == '':
-        return render_template('map.html', error="No file uploaded")
-
-    if not csv_file.filename.endswith('.csv'):
-        return render_template('map.html', error="Invalid file type")
-
-    # Check the file size and return an error if it is too large
-    if csv_file.content_length > 20 * 1024 * 1024:
-        return render_template('map.html', error="File is too large (max 20 MB)")
-
-
-    data = process_csv(csv_file)
-
-    return render_template('map.html', data_dict=data)
+@app.route('/')
+def index_map():
+    return render_template('map.html')
 
 if __name__ == '__main__':
     app.run()
