@@ -9,8 +9,9 @@ from werkzeug.utils import secure_filename
 
 
 app = Flask(__name__)
+app.debug = False
 app.config['ALLOWED_EXTENSIONS'] = {'csv'}
-app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024     # maximum size for an incoming file is 20MB
+app.config['MAX_CONTENT_LENGTH'] = 320 * 1024     # maximum size for an incoming file in B
 
 @app.route('/upload', methods=['POST'])
 def upload():
@@ -33,6 +34,7 @@ def upload():
     else:
         return "Invalid file type or file size exceeded 20MB"
 
+# Return true if the filename has a dot and the extension is in ALLOWED_EXTENSIONS
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
@@ -46,8 +48,10 @@ def map(data_id):
 
     # Convert to JSON
     data = df.to_json(orient='records')
-    # Get list of numerical attributes. _get_num... returns new DF containing only the numerical columns
-    numerical_attributes = [col for col in df._get_numeric_data().columns]
+
+    numerical_attributes = [col for col in df.columns
+        # is sub-data-type checks if the column is a np.number type amd exclude columns with all null values
+        if np.issubdtype(df[col].dtype, np.number) and df[col].notnull().any()]
 
     # Calculate quantile ranges for 1-10 quantiles for each attribute
     all_quantile_ranges = {}

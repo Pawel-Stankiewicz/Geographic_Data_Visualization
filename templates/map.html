@@ -60,9 +60,12 @@
         </form>
     </div>
     <form id="upload-form" class="form-label "method="post" enctype="multipart/form-data" action="/upload">
-        <label id="upload-label" for="file-input">Upload a CSV with lat long columns to display data on the map:
-            <input type="file" name="file" id="file-input" accept=".csv"  required>
-        </label>
+        <div id="upload-label">
+            <label for="file-input">Upload a CSV with lat and long columns to display data on the map.
+                At 2 k points the map can lag.
+                <input type="file" name="file" id="file-input" accept=".csv"  required>
+            </label>
+        </div>
         <input type="submit" value="Upload">
     </form>
 </div>
@@ -76,11 +79,8 @@
 <!--<script src="{{ url_for('static', filename='leaflet-src.js') }}"></script>-->
 <script src="{{ url_for('static', filename='layers.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/nouislider@15.6.1/dist/nouislider.js"></script>
-<script src="{{ url_for('static', filename='nouislider.js') }}"></script>
+<!--<script src="{{ url_for('static', filename='nouislider.js') }}"></script>-->
 <script src="{{ url_for('static', filename='data-controls.js') }}"></script>
-
-
-{# redundent #}
 
 </body>
 </html>
