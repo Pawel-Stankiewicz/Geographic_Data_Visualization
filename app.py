@@ -42,7 +42,7 @@ def allowed_file(filename):
 @app.route('/map/<data_id>')
 def map(data_id):
     # Connect to the SQLite database
-    engine = create_engine('sqlite:///data.db')
+    engine = create_engine('sqlite:///./data.db')
 
     df = pd.read_sql_table(data_id, engine)
 

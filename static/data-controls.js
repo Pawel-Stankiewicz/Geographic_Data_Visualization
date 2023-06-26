@@ -103,7 +103,7 @@ function displaySelectedDataColumn() {
 
     updateMarkersVisibility();
     // Update class ranges
-    numRangesChanged(document.getElementById('num-ranges').value)
+    numRangesChanged(document.getElementById('num-ranges').value);
     updateMarkerSizes();
 }
 
@@ -148,7 +148,7 @@ function numRangesChanged(numRanges) {
 
     // Generate a list of colors from the palette
     const colors = [];
-    if (numRanges == 1) {
+    if (numRanges === 1) {
         colors.push('#dc143c');
     } else {
         for (let i = 0; i < numRanges; i++) {
