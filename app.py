@@ -25,7 +25,7 @@ def upload():
         df = pd.read_csv(file)
 
         # Connect to the SQLite database
-        engine = create_engine('sqlite:///data.db')
+        engine = create_engine('sqlite:///./data.db')
 
         # Store the DataFrame in the database as table with a name = identifier
         df.to_sql(data_id, engine, if_exists='replace', index=False)
